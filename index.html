@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FinRise</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --gold:#C9A84C;--dark:#0D0F14;--mid:#1A1D26;--light:#F5F2EB;
+    --muted:#8A8F9E;--white:#FFFFFF;--accent:#3B82F6;
+  }
+  body{font-family:'DM Sans',sans-serif;background:var(--dark);color:var(--white);overflow-x:hidden}
+  .page{display:none;min-height:100vh;flex-direction:column}
+  .page.active{display:flex}
+
+  /* NAV */
+  nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:1.2rem 3rem;background:rgba(13,15,20,0.9);backdrop-filter:blur(12px);border-bottom:1px solid rgba(201,168,76,0.2)}
+  .logo{font-family:'DM Serif Display',serif;font-size:1.6rem;color:var(--gold);letter-spacing:0.02em;cursor:pointer}
+  .logo span{color:var(--white)}
+  nav a.home-btn{font-size:0.85rem;font-weight:500;color:var(--white);text-decoration:none;letter-spacing:0.08em;text-transform:uppercase;padding:0.5rem 1rem;border:1px solid rgba(201,168,76,0.3);border-radius:4px;transition:all 0.2s}
+  nav a.home-btn:hover{color:var(--gold);border-color:var(--gold)}
+
+  /* HERO */
+  #home{background:var(--dark);position:relative;overflow:hidden}
+  .hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 20%,rgba(201,168,76,0.08) 0%,transparent 70%)}
+  .hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(201,168,76,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(201,168,76,0.04) 1px,transparent 1px);background-size:60px 60px}
+  .hero-content{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:6rem 2rem 4rem}
+  .eyebrow{font-size:0.75rem;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:1.5rem}
+  h1{font-family:'DM Serif Display',serif;font-size:clamp(3rem,8vw,7rem);line-height:1.0;color:var(--white);margin-bottom:1.5rem}
+  h1 em{font-style:italic;color:var(--gold)}
+  .tagline{font-size:1.1rem;font-weight:300;color:var(--white);max-width:520px;line-height:1.7;margin-bottom:3rem}
+  .mission-strip{background:rgba(201,168,76,0.07);border:1px solid rgba(201,168,76,0.2);border-radius:8px;padding:1.2rem 2rem;max-width:600px;font-size:0.9rem;color:var(--white);line-height:1.7;margin-bottom:3.5rem}
+  .mission-strip strong{color:var(--gold)}
+
+  /* TOPIC CARDS */
+  .topics{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;width:100%;max-width:900px}
+  .topic-card{background:var(--mid);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:1.5rem 1.2rem;cursor:pointer;transition:all 0.25s;text-align:left}
+  .topic-card:hover{border-color:var(--gold);background:rgba(201,168,76,0.08);transform:translateY(-3px)}
+  .topic-num{font-size:0.7rem;font-weight:600;letter-spacing:0.15em;color:var(--gold);margin-bottom:0.6rem}
+  .topic-title{font-family:'DM Serif Display',serif;font-size:1.05rem;color:var(--white);margin-bottom:0.4rem}
+  .topic-sub{font-size:0.78rem;color:var(--white)}
+  .topic-arrow{margin-top:1rem;font-size:1rem;color:var(--gold)}
+
+  /* SLIDESHOW PAGES */
+  .slide-page{padding-top:80px}
+  .slide-header{padding:3rem 3rem 2rem;border-bottom:1px solid rgba(255,255,255,0.07)}
+  .slide-header .eyebrow{margin-bottom:0.5rem}
+  .slide-header h2{font-family:'DM Serif Display',serif;font-size:clamp(1.8rem,4vw,3rem)}
+  .slide-header p{color:var(--white);font-size:0.95rem;margin-top:0.5rem}
+
+  /* SLIDESHOW */
+  .slideshow-wrap{flex:1;display:flex;flex-direction:column;padding:2rem 3rem 3rem}
+  .slides-container{position:relative;flex:1;overflow:hidden}
+  .slide{display:none;animation:fadeSlide 0.4s ease}
+  .slide.active{display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:center;min-height:420px}
+  @keyframes fadeSlide{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+  .slide-text h3{font-family:'DM Serif Display',serif;font-size:clamp(1.4rem,3vw,2.2rem);margin-bottom:1rem;color:var(--white)}
+  .slide-text p{color:var(--white);line-height:1.8;font-size:0.95rem;margin-bottom:0.8rem}
+  .slide-text ul{margin:0.4rem 0 0.8rem 1.2rem;color:var(--white);line-height:1.8;font-size:0.92rem}
+  .slide-text ul li{margin-bottom:0.4rem}
+  .slide-visual{background:var(--mid);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:2rem;display:flex;flex-direction:column;justify-content:center;min-height:320px}
+  .slide-visual .chart-label{font-size:0.75rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--white);margin-bottom:1rem}
+  .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .bar-label{font-size:0.8rem;color:var(--white);min-width:110px}
+  .bar-track{flex:1;height:10px;background:rgba(255,255,255,0.06);border-radius:5px;overflow:hidden}
+  .bar-fill{height:100%;border-radius:5px;background:linear-gradient(90deg,#C9A84C,#E8C96A)}
+  .econ-table{width:100%;border-collapse:collapse;font-size:0.83rem}
+  .econ-table th{text-align:left;padding:8px 10px;color:var(--white);font-weight:600;border-bottom:1px solid rgba(255,255,255,0.3);font-size:0.75rem;letter-spacing:0.05em;text-transform:uppercase}
+  .econ-table td{padding:8px 10px;color:var(--white);border-bottom:1px solid rgba(255,255,255,0.08);vertical-align:top}
+  .tag{display:inline-block;font-size:0.7rem;font-weight:600;padding:2px 8px;border-radius:3px;letter-spacing:0.05em;text-transform:uppercase}
+  .tag.cap{background:rgba(59,130,246,0.15);color:#93C5FD}
+  .tag.soc{background:rgba(201,168,76,0.15);color:#E8C96A}
+  .tag.com{background:rgba(239,68,68,0.15);color:#FCA5A5}
+  .note{font-size:0.83rem;color:var(--white);margin-top:0.8rem;line-height:1.6}
+
+  /* CONTROLS */
+  .slide-controls{display:flex;align-items:center;justify-content:space-between;margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid rgba(255,255,255,0.07)}
+  .slide-counter{font-size:0.82rem;color:var(--white);letter-spacing:0.05em}
+  .slide-dots{display:flex;gap:6px}
+  .dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.15);cursor:pointer;transition:all 0.2s}
+  .dot.active{background:var(--gold);width:20px;border-radius:3px}
+  .ctrl-btns{display:flex;gap:8px}
+  .ctrl-btn{background:none;border:1px solid rgba(255,255,255,0.12);color:var(--white);padding:0.5rem 1.2rem;border-radius:5px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:0.85rem;transition:all 0.2s}
+  .ctrl-btn:hover{border-color:var(--gold);color:var(--gold)}
+  .ctrl-btn:disabled{opacity:0.25;cursor:not-allowed}
+
+  @media(max-width:700px){
+    nav{padding:1rem 1.2rem}
+    .slide-header,.slideshow-wrap{padding-left:1.2rem;padding-right:1.2rem}
+    .slide.active{grid-template-columns:1fr}
+    .slide-visual{display:none}
+  }
+</style>
+</head>
+<body>
+
+<!-- FIXED NAV -->
+<nav>
+  <div class="logo" onclick="goHome()">Fin<span>Rise</span></div>
+  <a class="home-btn" href="#" onclick="goHome();return false">Back to Home</a>
+</nav>
+
+<!-- HOME PAGE -->
+<div class="page active" id="home">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-content">
+    <p class="eyebrow">Financial Literacy for Everyone</p>
+    <h1>Fin<em>Rise</em></h1>
+    <p class="tagline">Clear, honest financial education built for refugees, immigrants, and anyone who was never taught how money works.</p>
+    <div class="mission-strip">
+      <strong>Our Mission:</strong> Economic knowledge has always belonged to the privileged few. FinRise exists to change that by delivering textbook-quality financial education to refugees, low-income communities, and first-generation learners, completely free.
+    </div>
+    <div class="topics">
+      <div class="topic-card" onclick="showPage('scarcity')">
+        <div class="topic-num">01</div>
+        <div class="topic-title">Scarcity in Economics</div>
+        <div class="topic-sub">Why resources are limited and choices matter</div>
+        <div class="topic-arrow">→</div>
+      </div>
+      <div class="topic-card" onclick="showPage('taxes')">
+        <div class="topic-num">02</div>
+        <div class="topic-title">Understanding Taxes</div>
+        <div class="topic-sub">Progressive, state, payroll and more</div>
+        <div class="topic-arrow">→</div>
+      </div>
+      <div class="topic-card" onclick="showPage('legislation')">
+        <div class="topic-num">03</div>
+        <div class="topic-title">Economic Legislation</div>
+        <div class="topic-sub">Key US laws that shape the economy</div>
+        <div class="topic-arrow">→</div>
+      </div>
+      <div class="topic-card" onclick="showPage('systems')">
+        <div class="topic-num">04</div>
+        <div class="topic-title">Economic Systems</div>
+        <div class="topic-sub">Capitalism, socialism and communism explained</div>
+        <div class="topic-arrow">→</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 1: SCARCITY -->
+<div class="page slide-page" id="scarcity">
+  <div class="slide-header">
+    <p class="eyebrow">Topic 01</p>
+    <h2>Scarcity in Economics</h2>
+    <p>The foundational concept behind every economic decision ever made.</p>
+  </div>
+  <div class="slideshow-wrap">
+    <div class="slides-container" id="scarcity-slides">
+
+      <div class="slide active" data-page="scarcity" data-idx="0">
+        <div class="slide-text">
+          <h3>What Is Scarcity?</h3>
+          <p>Scarcity is the condition that exists when human wants exceed the resources available to satisfy them. It is the central problem of economics.</p>
+          <p>Resources, including land, labor, capital, and entrepreneurship, are finite. Human desires, by contrast, are effectively unlimited. This gap is scarcity.</p>
+          <ul>
+            <li>A billionaire faces scarce time</li>
+            <li>A government faces a scarce budget</li>
+            <li>A refugee family faces scarce food and shelter</li>
+            <li>The nature of scarcity differs across people, but its presence is universal</li>
+          </ul>
+        </div>
+        <div class="slide-visual">
+          <div class="chart-label">Available Supply of the 4 Factors of Production (illustrative)</div>
+          <div class="bar-row"><div class="bar-label">Land</div><div class="bar-track"><div class="bar-fill" style="width:35%"></div></div></div>
+          <div class="bar-row"><div class="bar-label">Labor</div><div class="bar-track"><div class="bar-fill" style="width:55%"></div></div></div>
+          <div class="bar-row"><div class="bar-label">Capital</div><div class="bar-track"><div class="bar-fill" style="width:28%"></div></div></div>
+          <div class="bar-row"><div class="bar-label">Time</div><div class="bar-track"><div class="bar-fill" style="width:20%"></div></div></div>
+          <p class="note">Human wants are effectively unlimited while all four factors remain finite.</p>
+        </div>
+      </div>
+
+      <div class="slide" data-page="scarcity" data-idx="1">
+        <div class="slide-text">
+          <h3>The Four Factors of Production</h3>
+          <p><strong style="color:var(--gold)">Land:</strong> All natural resources such as water, oil, timber, and arable soil. These are finite and unevenly distributed.</p>
+          <p><strong style="color:var(--gold)">Labor:</strong> Human effort applied to production. Limited by population, skill level, health, and hours in a day.</p>
+          <p><strong style="color:var(--gold)">Capital:</strong> Machinery, tools, buildings, and technology used in production. Creating capital requires forgoing consumption.</p>
+          <p><strong style="color:var(--gold)">Entrepreneurship:</strong> The human capacity to organize the other three factors. Rare and unevenly distributed.</p>
+        </div>
+        <div class="slide-visual">
+          <table class="econ-table">
+            <tr><th>Factor</th><th>Example</th><th>Limited by</th></tr>
+            <tr><td>Land</td><td>Oil reserves</td><td>Geology / geography</td></tr>
+            <tr><td>Labor</td><td>Nurses in a hospital</td><td>Training, population</td></tr>
+            <tr><td>Capital</td><td>Factory equipment</td><td>Investment cost</td></tr>
+            <tr><td>Entrepreneurship</td><td>Startup founders</td><td>Risk tolerance, skill</td></tr>
+          </table>
+          <p class="note">All four factors are scarce. Economies grow by using them more efficiently, not by acquiring more of them.</p>
+        </div>
+      </div>
+
+      <div class="slide" data-page="scarcity" data-idx="2">
+        <div class="slide-text">
+          <h3>Opportunity Cost</h3>
+          <p>Because resources are scarce, every choice involves a trade-off. The opportunity cost of a decision is the value of the best alternative you give up by making it.</p>
+          <p>If a government spends $1 billion building highways, the opportunity cost might be hospitals that were not built, or teachers who were not hired.</p>
+          <ul>
+            <li>Opportunity cost applies to time, energy, and any limited resource, not just money</li>
+            <li>Example: A refugee family spends Saturday in a government office for documentation. The opportunity cost is the wages they could have earned working that day</li>
+          </ul>
+        </div>
+        <div class="slide-visual">
+          <div class="chart-label">Opportunity Cost: Government Budget</div>
+          <div class="bar-row"><div class="bar-label">Defense</div><div class="bar-track"><div class="bar-fill" style="width:75%"></div></div></div>
+          <div class="bar-row"><div class="bar-label">Education</div><div class="bar-track"><div class="bar-fill" style="width:48%"></div></div></div>
+          <div class="bar-row"><div class="bar-label">Healthcare</div><div class="bar-track"><div class="bar-fill" style="width:60%"></div></div></div>
+          <div class="bar-row"><div class="bar-label">Infrastructure</div><div class="bar-track"><div class="bar-fill" style="width:30%"></div></div></div>
+          <p class="note">Every dollar spent in one area is unavailable elsewhere.</p>
+        </div>
+      </div>
+
+      <div class="slide" data-page="scarcity" data-idx="3">
+        <div class="slide-text">
+          <h3>The Production Possibilities Frontier</h3>
+          <p>The Production Possibilities Frontier (PPF) is an economic model showing the maximum combinations of two goods an economy can produce using all available resources efficiently.</p>
+          <ul>
+            <li>Points on the curve are efficient</li>
+            <li>Points inside the curve represent underused resources (inefficiency)</li>
+            <li>Points outside the curve are currently unachievable</li>
+            <li>Choosing more of one good means less of the other</li>
+            <li>The curve bends outward due to differing opportunity costs</li>
+          </ul>
+        </div>
+        <div class="slide-visual">
+          <div class="chart-label">PPF: Consumer vs. Capital Goods</div>
+          <svg width="100%" height="200" viewBox="0 0 260 180" style="margin:0 auto;display:block">
+            <line x1="30" y1="10" x2="30" y2="155" stroke="#ffffff22" stroke-width="1"/>
+            <line x1="30" y1="155" x2="245" y2="155" stroke="#ffffff22" stroke-width="1"/>
+            <path d="M30,20 Q120,30 230,155" stroke="#C9A84C" stroke-width="2" fill="none"/>
+            <circle cx="100" cy="68" r="4" fill="#3B82F6"/>
+            <text x="108" y="65" fill="#ffffff" font-size="9">Efficient</text>
+            <circle cx="80" cy="100" r="4" fill="#aaa"/>
+            <text x="88" y="97" fill="#ffffff" font-size="9">Inefficient</text>
+            <text x="5" y="15" fill="#ffffff" font-size="9" transform="rotate(-90 15 90)">Capital Goods</text>
+            <text x="160" y="170" fill="#ffffff" font-size="9">Consumer Goods</text>
+          </svg>
+        </div>
+      </div>
+
+      <div class="slide" data-page="scarcity" data-idx="4">
+        <div class="slide-text">
+          <h3>Scarcity and Real-World Inequality</h3>
+          <p>Scarcity does not fall equally on all people. Those with fewer resources, such as refugees, low-income families, or people in developing economies, face more severe forms of scarcity in daily life.</p>
+          <p>Economic systems are in large part mechanisms for deciding who gets the scarce resources: markets, governments, or tradition.</p>
+          <ul>
+            <li>3.4 billion people live on less than $5.50 per day (World Bank)</li>
+            <li>700 million people face food scarcity globally</li>
+            <li>1 in 4 US children experience some form of food insecurity</li>
+            <li>Your income is scarce. How you allocate it is an economic decision with real opportunity costs</li>
+          </ul>
+        </div>
+        <div class="slide-visual">
+          <div class="chart-label">Global Scarcity (share of world population, approx.)</div>
+          <div class="bar-row"><div class="bar-label">Below $5.50/day</div><div class="bar-track"><div class="bar-fill" style="width:43%"></div></div></div>
+          <div class="bar-row"><div class="bar-label">Food insecure</div><div class="bar-track"><div class="bar-fill" style="width:9%"></div></div></div>
+          <div class="bar-row"><div class="bar-label">No clean water</div><div class="bar-track"><div class="bar-fill" style="width:28%"></div></div></div>
+        </div>
+      </div>
+
+    </div>
+    <div class="slide-controls">
+      <div class="slide-counter" id="scarcity-counter">Slide 1 of 5</div>
+      <div class="slide-dots" id="scarcity-dots"></div>
+      <div class="ctrl-btns">
+        <button class="ctrl-btn" onclick="prevSlide('scarcity')" id="scarcity-prev" disabled>Prev</button>
+        <button class="ctrl-btn" onclick="nextSlide('scarcity')" id="scarcity-next">Next</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 2: TAXES -->
+<div class="page slide-page" id="taxes">
+  <div class="slide-header">
+    <p class="eyebrow">Topic 02</p>
+    <h2>Understanding Taxes</h2>
+    <p>How governments collect revenue and what it means for your paycheck.</p>
+  </div>
+  <div class="slideshow-wrap">
+    <div class="slides-container" id="taxes-slides">
+
+      <div class="slide active" data-page="taxes" data-idx="0">
+        <div class="slide-text">
+          <h3>What Are Taxes?</h3>
+          <p>A tax is a compulsory financial charge imposed by a government on individuals and organizations. Tax revenue funds public goods and services such as roads, schools, national defense, social programs, and law enforcement.</p>
+          <p>In the United States, taxes exist at three levels: federal, state, and local. Each level has the authority to levy different types of taxes.</p>
+          <ul>
+            <li>The US federal government spends approximately $6 trillion per year</li>
+            <li>Taxes are the primary mechanism funding that budget</li>
+            <li>Understanding the tax system is essential to understanding your own finances</li>
+          </ul>
+        </div>
+        <div class="slide-visual">
+          <div class="chart-label">Where Federal Tax Dollars Go (approx.)</div>
+          <div class="bar-row"><div class="bar-label">Social Security</div><div class="bar-track"><div class="bar-fill" style="width:77%"></div></div></div>
+          <div class="bar-row"><div class="bar-label">Defense</div><div class="bar-track"><div class="bar-fill" style="width:52%"></div></div></div>
+          <div class="bar-row"><div class="bar-label">Medicare/Medicaid</div><div class="bar-track"><div class="bar-fill" style="width:68%"></div></div></div>
+          <div class="bar-row"><div class="bar-label">Interest on Debt</div><div class="bar-track"><div class="bar-fill" style="width:35%"></div></div></div>
+          <div class="bar-row"><div class="bar-label">Other Programs</div><div class="bar-track"><div class="bar-fill" style="width:45%"></div></div></div>
+        </div>
+      </div>
+
+      <div class="slide" data-page="taxes" data-idx="1">
+        <div class="slide-text">
+          <h3>Progressive Income Tax</h3>
+          <p>The federal income tax is <strong style="color:var(--gold)">progressive</strong>: the more you earn, the higher the percentage you pay, but only on the income above each threshold (tax bracket).</p>
+          <p>A common misconception is that moving into a higher bracket means all income is taxed at the new rate. In reality, each bracket applies only to the income within its range.</p>
+          <ul>
+            <li>If you earn $60,000, you do not pay 22% on all of it</li>
+            <li>The first $11,600 is taxed at 10%, the next portion at 12%, and only income above $47,150 is taxed at 22%</li>
+          </ul>
+        </div>
+        <div class="slide-visual">
+          <div class="chart-label">2024 Federal Tax Brackets (Single Filer)</div>
+          <table class="econ-table">
+            <tr><th>Rate</th><th>Income Range</th></tr>
+            <tr><td>10%</td><td>$0 to $11,600</td></tr>
+            <tr><td>12%</td><td>$11,601 to $47,150</td></tr>
+            <tr><td>22%</td><td>$47,151 to $100,525</td></tr>
+            <tr><td>24%</td><td>$100,526 to $191,950</td></tr>
+            <tr><td>32%</td><td>$191,951 to $243,725</td></tr>
+            <tr><td>35%</td><td>$243,726 to $609,350</td></tr>
+            <tr><td>37%</td><td>Over $609,350</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="slide" data-page="taxes" data-idx="2">
+        <div class="slide-text">
+          <h3>Payroll and Employment Taxes</h3>
+          <p><strong style="color:var(--gold)">FICA taxes</strong> are automatically withheld from your paycheck under the Federal Insurance Contributions Act. They fund Social Security and Medicare.</p>
+          <p>Social Security tax: <strong>6.2%</strong> of wages (up to $168,600 in 2024). Your employer matches this 6.2%.</p>
+          <p>Medicare tax: <strong>1.45%</strong> with no income cap. An additional 0.9% applies to wages above $200,000.</p>
+          <ul>
+            <li>Self-employed individuals pay the full FICA burden themselves (15.3%) because there is no employer to split it</li>
+            <li>This is called the self-employment tax</li>
+          </ul>
+        </div>
+        <div class="slide-visual">
+          <div class="chart-label">Paycheck Deduction Breakdown (illustrative, $50k salary)</div>
+          <div class="bar-row"><div class="bar-label">Federal Income</div><div class="bar-track"><div class="bar-fill" style="width:58%"></div></div></div>
+          <div class="bar-row"><div class="bar-label">Social Security</div><div class="bar-track"><div class="bar-fill" style="width:36%"></div></div></div>
+          <div class="bar-row"><div class="bar-label">Medicare</div><div class="bar-track"><div class="bar-fill" style="width:13%"></div></div></div>
+          <div class="bar-row"><div class="bar-label">State Tax</div><div class="bar-track"><div class="bar-fill" style="width:22%"></div></div></div>
+          <p class="note">Approximate percentages. Vary by state and deductions.</p>
+        </div>
+      </div>
+
+      <div class="slide" data-page="taxes" data-idx="3">
+        <div class="slide-text">
+          <h3>State and Local Taxes</h3>
+          <p>In addition to federal taxes, most Americans pay state and local taxes. These vary enormously by location.</p>
+          <p><strong style="color:var(--gold)">State income tax:</strong> Ranges from 0% in states such as Texas, Florida, and Wyoming to over 13% in California. Nine states have no income tax.</p>
+          <p><strong style="color:var(--gold)">Sales tax:</strong> A consumption tax on goods and services. Ranges from 0% in states such as Oregon and Montana to combined rates over 10% in some localities.</p>
+          <p><strong style="color:var(--gold)">Property tax:</strong> Assessed annually on real estate. Funds local schools and municipal services.</p>
+        </div>
+        <div class="slide-visual">
+          <table class="econ-table">
+            <tr><th>State</th><th>Income Tax</th><th>Sales Tax</th></tr>
+            <tr><td>California</td><td>1% to 13.3%</td><td>7.25%+</td></tr>
+            <tr><td>Texas</td><td>None</td><td>6.25%+</td></tr>
+            <tr><td>New York</td><td>4% to 10.9%</td><td>4%+</td></tr>
+            <tr><td>Florida</td><td>None</td><td>6%+</td></tr>
+            <tr><td>Oregon</td><td>4.75% to 9.9%</td><td>None</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="slide" data-page="taxes" data-idx="4">
+        <div class="slide-text">
+          <h3>Capital Gains Tax</h3>
+          <p>When you sell an asset (stocks, real estate, a business) for more than you paid, the profit is a <strong style="color:var(--gold)">capital gain</strong> and it is taxable.</p>
+          <p><strong>Short-term capital gains</strong> (assets held under 1 year) are taxed as ordinary income at your regular bracket rate.</p>
+          <p><strong>Long-term capital gains</strong> (assets held over 1 year) are taxed at preferential rates: 0%, 15%, or 20% depending on income.</p>
+          <ul>
+            <li>This is why investors often hold assets for at least one year before selling</li>
+            <li>Moving from short-term to long-term treatment can reduce the tax rate by more than half for many earners</li>
+          </ul>
+        </div>
+        <div class="slide-visual">
+          <div class="chart-label">Long-term Capital Gains Rates (2024)</div>
+          <table class="econ-table">
+            <tr><th>Rate</th><th>Single Filer Income</th></tr>
+            <tr><td>0%</td><td>Up to $47,025</td></tr>
+            <tr><td>15%</td><td>$47,026 to $518,900</td></tr>
+            <tr><td>20%</td><td>Over $518,900</td></tr>
+          </table>
+          <p class="note">Compare to ordinary income rates of 10% to 37%. Holding an asset longer than 1 year is a legal and common tax strategy.</p>
+        </div>
+      </div>
+
+      <div class="slide" data-page="taxes" data-idx="5">
+        <div class="slide-text">
+          <h3>Tax Deductions and Credits</h3>
+          <p><strong style="color:var(--gold)">Deductions</strong> reduce the amount of income that is taxed. The standard deduction for a single filer in 2024 is $14,600. Itemized deductions include mortgage interest, charitable donations, and medical expenses.</p>
+          <p><strong style="color:var(--gold)">Tax credits</strong> directly reduce the amount of tax owed, dollar for dollar. They are more powerful than deductions.</p>
+          <ul>
+            <li>The Earned Income Tax Credit (EITC) benefits low-to-moderate income workers, up to $7,830 (3+ children, 2024)</li>
+            <li>The Child Tax Credit provides up to $2,000 per qualifying child</li>
+            <li>The EITC is refundable: if it exceeds what you owe, the government pays you the difference</li>
+            <li>In 2022, the EITC lifted approximately 5.5 million people out of poverty</li>
+          </ul>
+        </div>
+        <div class="slide-visual">
+          <table class="econ-table">
+            <tr><th>Benefit</th><th>2024 Amount</th></tr>
+            <tr><td>Standard Deduction (Single)</td><td>$14,600</td></tr>
+            <tr><td>Child Tax Credit</td><td>Up to $2,000 per child</td></tr>
+            <tr><td>Maximum EITC (3+ children)</td><td>$7,830</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="slide" data-page="taxes" data-idx="6">
+        <div class="slide-text">
+          <h3>Estate and Gift Taxes</h3>
+          <p>The federal <strong style="color:var(--gold)">estate tax</strong> applies to the transfer of wealth upon death. In 2024, estates valued over $13.61 million are subject to a 40% federal estate tax on amounts above the exemption.</p>
+          <p>The <strong style="color:var(--gold)">gift tax</strong> prevents people from avoiding estate tax by giving away assets before death. The annual gift exclusion is $18,000 per recipient in 2024.</p>
+          <ul>
+            <li>These taxes primarily affect the very wealthy</li>
+            <li>Understanding them is still relevant for financial planning and inheritance</li>
+            <li>The 2017 Tax Cuts and Jobs Act doubled the estate tax exemption; it is scheduled to revert in 2026 unless Congress acts</li>
+          </ul>
+        </div>
+        <div class="slide-visual">
+          <table class="econ-table">
+            <tr><th>Tax</th><th>2024 Threshold</th><th>Rate</th></tr>
+            <tr><td>Estate Tax</td><td>$13.61M+</td><td>Up to 40%</td></tr>
+            <tr><td>Annual Gift Exclusion</td><td>$18,000 per recipient</td><td>0%</td></tr>
+            <tr><td>Lifetime Gift Exemption</td><td>$13.61M total</td><td>40% above</td></tr>
+          </table>
+        </div>
+      </div>
+
+    </div>
+    <div class="slide-controls">
+      <div class="slide-counter" id="taxes-counter">Slide 1 of 7</div>
+      <div class="slide-dots" id="taxes-dots"></div>
+      <div class="ctrl-btns">
+        <button class="ctrl-btn" onclick="prevSlide('taxes')" id="taxes-prev" disabled>Prev</button>
+        <button class="ctrl-btn" onclick="nextSlide('taxes')" id="taxes-next">Next</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 3: LEGISLATION -->
+<div class="page slide-page" id="legislation">
+  <div class="slide-header">
+    <p class="eyebrow">Topic 03</p>
+    <h2>Economic Legislation in the US</h2>
+    <p>The landmark laws that shaped how the American economy functions today.</p>
+  </div>
+  <div class="slideshow-wrap">
+    <div class="slides-container" id="legislation-slides">
+
+      <div class="slide active" data-page="legislation" data-idx="0">
+        <div class="slide-text">
+          <h3>The Federal Reserve Act (1913)</h3>
+          <p>The Federal Reserve Act established the Federal Reserve System (the "Fed") as the central bank of the United States. It was created in response to a series of financial panics, most notably the Panic of 1907.</p>
+          <p>The Fed's core responsibilities: managing monetary policy (setting interest rates), regulating banks, maintaining financial system stability, and acting as the lender of last resort during crises.</p>
+          <ul>
+            <li>The Fed does not print money at will</li>
+            <li>It manages the money supply through open market operations, reserve requirements, and the federal funds rate</li>
+            <li>Its decisions affect mortgage rates, car loans, inflation, and employment nationwide</li>
+          </ul>
+        </div>
+        <div class="slide-visual">
+          <div class="chart-label">Federal Reserve Structure</div>
+          <table class="econ-table">
+            <tr><th>Body</th><th>Function</th></tr>
+            <tr><td>Board of Governors</td><td>Policy oversight (7 members, DC)</td></tr>
+            <tr><td>FOMC</td><td>Sets monetary policy and interest rates</td></tr>
+            <tr><td>12 Reserve Banks</td><td>Regional economic services</td></tr>
+            <tr><td>Member Banks</td><td>Private commercial banks</td></tr>
+          </table>
+          <p class="note">FOMC = Federal Open Market Committee. Meets 8 times per year.</p>
+        </div>
+      </div>
+
+      <div class="slide" data-page="legislation" data-idx="1">
+        <div class="slide-text">
+          <h3>The Glass-Steagall Act (1933)</h3>
+          <p>Passed in response to the Great Depression, the Glass-Steagall Act separated commercial banking (taking deposits, making loans) from investment banking (underwriting securities, trading).</p>
+          <p>It also established the FDIC, the Federal Deposit Insurance Corporation, which insures bank deposits up to $250,000, protecting ordinary savers if a bank fails.</p>
+          <ul>
+            <li>Key provisions were repealed in 1999 by the Gramm-Leach-Bliley Act, allowing banks to merge commercial and investment activities</li>
+            <li>Many economists argue this contributed to the 2008 financial crisis</li>
+            <li>Your bank deposits today are insured by the FDIC up to $250,000, a direct legacy of Glass-Steagall</li>
+            <li>Zero insured depositors lost money during the 2008 financial crisis</li>
+          </ul>
+        </div>
+        <div class="slide-visual">
+          <table class="econ-table">
+            <tr><th>Feature</th><th>Detail</th></tr>
+            <tr><td>Enacted</td><td>1933, during the Great Depression</td></tr>
+            <tr><td>FDIC Insurance</td><td>$250,000 per depositor per bank</td></tr>
+            <tr><td>Key repeal</td><td>1999, Gramm-Leach-Bliley Act</td></tr>
+            <tr><td>2008 outcome</td><td>Zero insured depositors lost money</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="slide" data-page="legislation" data-idx="2">
+        <div class="slide-text">
+          <h3>The Social Security Act (1935)</h3>
+          <p>Signed by President Roosevelt during the Great Depression, the Social Security Act created a federal safety net program providing retirement income to workers, disability benefits, and survivor benefits to families of deceased workers.</p>
+          <p>Social Security is funded through payroll taxes (FICA). It operates as a pay-as-you-go system: current workers pay taxes that fund current retirees' benefits.</p>
+          <ul>
+            <li>Social Security is the largest single expenditure in the US federal budget</li>
+            <li>Over 67 million Americans receive benefits monthly as of 2024</li>
+            <li>It is the primary source of income for approximately 40% of retired Americans</li>
+            <li>Average monthly benefit in 2024: $1,907</li>
+          </ul>
+        </div>
+        <div class="slide-visual">
+          <div class="chart-label">Social Security Beneficiaries (2024)</div>
+          <div class="bar-row"><div class="bar-label">Retired workers</div><div class="bar-track"><div class="bar-fill" style="width:72%"></div></div></div>
+          <div class="bar-row"><div class="bar-label">Disabled workers</div><div class="bar-track"><div class="bar-fill" style="width:18%"></div></div></div>
+          <div class="bar-row"><div class="bar-label">Survivors/Dependents</div><div class="bar-track"><div class="bar-fill" style="width:20%"></div></div></div>
+          <p class="note">Proportional share of approximately 67 million total beneficiaries.</p>
+        </div>
+      </div>
+
+      <div class="slide" data-page="legislation" data-idx="3">
+        <div class="slide-text">
+          <h3>The Civil Rights Act and Fair Housing Act (1964 / 1968)</h3>
+          <p>The Civil Rights Act of 1964 prohibited employment discrimination based on race, color, religion, sex, or national origin. This had direct economic consequences: it opened access to jobs, wages, and careers previously restricted by law and custom.</p>
+          <p>The Fair Housing Act of 1968 prohibited discrimination in the sale, rental, and financing of housing. It targeted redlining, the practice by which banks systematically denied loans to residents of certain (primarily Black) neighborhoods.</p>
+          <ul>
+            <li>Redlining prevented Black families from building wealth through homeownership for decades</li>
+            <li>It contributed to wealth gaps that persist today</li>
+            <li>The Fair Housing Act was a direct economic intervention, not just a moral one</li>
+          </ul>
+        </div>
+        <div class="slide-visual">
+          <table class="econ-table">
+            <tr><th>Practice</th><th>Effect</th><th>Status</th></tr>
+            <tr><td>Employment discrimination</td><td>Wage suppression</td><td>Illegal 1964</td></tr>
+            <tr><td>Housing redlining</td><td>Blocked wealth building</td><td>Illegal 1968</td></tr>
+            <tr><td>Discriminatory lending</td><td>Excluded from credit</td><td>Illegal 1968+</td></tr>
+          </table>
+          <p class="note">Economic exclusion and legal discrimination compounded over generations.</p>
+        </div>
+      </div>
+
+      <div class="slide" data-page="legislation" data-idx="4">
+        <div class="slide-text">
+          <h3>The Dodd-Frank Act (2010)</h3>
+          <p>The Dodd-Frank Wall Street Reform and Consumer Protection Act was the most comprehensive financial regulatory reform since the Great Depression, passed in response to the 2008 financial crisis.</p>
+          <p>Key provisions included creating the Consumer Financial Protection Bureau (CFPB) to protect consumers from predatory financial products, establishing new oversight of derivatives markets, and requiring large banks to submit plans for orderly failure.</p>
+          <ul>
+            <li>The CFPB has returned over $19 billion to consumers through enforcement actions since its founding in 2011</li>
+            <li>It oversees mortgages, credit cards, student loans, and payday lending</li>
+            <li>These are products that directly affect low-income Americans</li>
+          </ul>
+        </div>
+        <div class="slide-visual">
+          <table class="econ-table">
+            <tr><th>Feature</th><th>Detail</th></tr>
+            <tr><td>Enacted</td><td>2010, signed by President Obama</td></tr>
+            <tr><td>Length</td><td>Over 2,300 pages</td></tr>
+            <tr><td>CFPB refunds</td><td>$19B+ returned to consumers</td></tr>
+            <tr><td>Scope</td><td>Mortgages, credit, student loans, payday lending</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="slide" data-page="legislation" data-idx="5">
+        <div class="slide-text">
+          <h3>The Tax Cuts and Jobs Act (2017)</h3>
+          <p>The Tax Cuts and Jobs Act (TCJA) was the largest overhaul of the US tax code since 1986. Primary changes included reducing the corporate tax rate from 35% to 21% permanently, temporarily reducing individual income tax rates, increasing the standard deduction, and capping the SALT deduction at $10,000.</p>
+          <p>Most individual provisions are set to expire after 2025, reverting to pre-TCJA rates unless Congress acts.</p>
+          <ul>
+            <li>Proponents argue it stimulated investment and economic growth</li>
+            <li>Critics argue it disproportionately benefited corporations and high earners</li>
+            <li>It increased the federal deficit by approximately $1.5 trillion over 10 years</li>
+          </ul>
+        </div>
+        <div class="slide-visual">
+          <div class="chart-label">TCJA Key Changes</div>
+          <table class="econ-table">
+            <tr><th>Provision</th><th>Before</th><th>After</th></tr>
+            <tr><td>Corporate rate</td><td>35%</td><td>21% (permanent)</td></tr>
+            <tr><td>Standard deduction (single)</td><td>$6,350</td><td>$12,000+</td></tr>
+            <tr><td>Estate exemption</td><td>~$5.5M</td><td>~$11M (temporary)</td></tr>
+            <tr><td>SALT deduction cap</td><td>Unlimited</td><td>$10,000</td></tr>
+          </table>
+        </div>
+      </div>
+
+    </div>
+    <div class="slide-controls">
+      <div class="slide-counter" id="legislation-counter">Slide 1 of 6</div>
+      <div class="slide-dots" id="legislation-dots"></div>
+      <div class="ctrl-btns">
+        <button class="ctrl-btn" onclick="prevSlide('legislation')" id="legislation-prev" disabled>Prev</button>
+        <button class="ctrl-btn" onclick="nextSlide('legislation')" id="legislation-next">Next</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 4: ECONOMIC SYSTEMS -->
+<div class="page slide-page" id="systems">
+  <div class="slide-header">
+    <p class="eyebrow">Topic 04</p>
+    <h2>Economic Systems</h2>
+    <p>A textbook analysis of capitalism, socialism, and communism with country examples.</p>
+  </div>
+  <div class="slideshow-wrap">
+    <div class="slides-container" id="systems-slides">
+
+      <div class="slide active" data-page="systems" data-idx="0">
+        <div class="slide-text">
+          <h3>Overview: Three Economic Systems</h3>
+          <p>An economic system is the set of institutions, rules, and mechanisms a society uses to allocate scarce resources. Three major theoretical models exist: capitalism, socialism, and communism.</p>
+          <p>These systems differ across three fundamental dimensions: who owns the means of production, how resource allocation decisions are made, and what role the government plays in economic life.</p>
+          <ul>
+            <li>No pure form of any system exists in the real world</li>
+            <li>Most modern economies are mixed, combining elements of more than one system</li>
+            <li>The categories below represent idealized theoretical models and historical implementations</li>
+          </ul>
+        </div>
+        <div class="slide-visual">
+          <table class="econ-table">
+            <tr><th>Dimension</th><th><span class="tag cap">Capitalism</span></th><th><span class="tag soc">Socialism</span></th><th><span class="tag com">Communism</span></th></tr>
+            <tr><td>Ownership</td><td>Private</td><td>Mixed/State</td><td>State/Collective</td></tr>
+            <tr><td>Allocation</td><td>Markets</td><td>Partially planned</td><td>Central planning</td></tr>
+            <tr><td>Gov. Role</td><td>Limited</td><td>Significant</td><td>Total</td></tr>
+            <tr><td>Profit Motive</td><td>Central</td><td>Constrained</td><td>Eliminated</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="slide" data-page="systems" data-idx="1">
+        <div class="slide-text">
+          <h3>Capitalism: United States</h3>
+          <p>Capitalism is an economic system in which the means of production are privately owned and operated for profit. Resource allocation occurs primarily through market mechanisms. The price system coordinates supply and demand without central direction.</p>
+          <p>Core features: private property rights, free markets, price signals, competition, and profit incentive. Government's role is limited to enforcing contracts, protecting property, and providing public goods markets would not supply.</p>
+          <ul>
+            <li>US GDP in 2023: approximately $27.4 trillion, the world's largest single economy</li>
+            <li>The US accounts for approximately 25% of global GDP while containing 4% of the world's population</li>
+            <li>Over 33 million small businesses operate in the US</li>
+          </ul>
+        </div>
+        <div class="slide-visual">
+          <div class="chart-label"><span class="tag cap">Capitalism</span>: US Economic Indicators</div>
+          <table class="econ-table">
+            <tr><th>Indicator</th><th>Value</th></tr>
+            <tr><td>GDP</td><td>~$27.4 trillion</td></tr>
+            <tr><td>Share of global GDP</td><td>~25%</td></tr>
+            <tr><td>Share of world population</td><td>~4%</td></tr>
+            <tr><td>Private sector consumption</td><td>~60% of output</td></tr>
+            <tr><td>Small businesses</td><td>33 million+</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="slide" data-page="systems" data-idx="2">
+        <div class="slide-text">
+          <h3>Capitalism: Strengths and Limitations</h3>
+          <p><strong style="color:#93C5FD">Theoretical strengths:</strong></p>
+          <ul>
+            <li>Efficient resource allocation through price signals</li>
+            <li>Strong incentives for innovation and productivity</li>
+            <li>Decentralized decision-making prevents concentration of power</li>
+            <li>High levels of economic freedom</li>
+          </ul>
+          <p style="margin-top:0.5rem"><strong style="color:#FCA5A5">Theoretical limitations:</strong></p>
+          <ul>
+            <li>Tendency toward concentration of market power (monopoly)</li>
+            <li>Generates inequality in income and wealth distribution</li>
+            <li>Market failures in public goods, externalities, and information asymmetry</li>
+            <li>Susceptibility to boom-and-bust cycles</li>
+          </ul>
+        </div>
+        <div class="slide-visual">
+          <div class="chart-label">US Wealth Distribution (approx., Federal Reserve 2023)</div>
+          <div class="bar-row"><div class="bar-label">Top 1%</div><div class="bar-track"><div class="bar-fill" style="width:88%"></div></div></div>
+          <div class="bar-row"><div class="bar-label">Next 9%</div><div class="bar-track"><div class="bar-fill" style="width:38%"></div></div></div>
+          <div class="bar-row"><div class="bar-label">Next 40%</div><div class="bar-track"><div class="bar-fill" style="width:18%"></div></div></div>
+          <div class="bar-row"><div class="bar-label">Bottom 50%</div><div class="bar-track"><div class="bar-fill" style="width:4%"></div></div></div>
+        </div>
+      </div>
+
+      <div class="slide" data-page="systems" data-idx="3">
+        <div class="slide-text">
+          <h3>Socialism: Nordic Model (Sweden, Norway, Denmark)</h3>
+          <p>Socialism includes systems in which the means of production are owned or regulated by the community, typically through the state. In its moderate democratic form, socialism maintains private markets but uses strong taxation and welfare programs to redistribute income.</p>
+          <p>The Nordic countries represent the most frequently cited real-world examples: a capitalist market economy combined with extensive publicly funded healthcare, education, unemployment insurance, and pension systems.</p>
+          <ul>
+            <li>Sweden's top marginal income tax rate exceeds 55%</li>
+            <li>Citizens receive universal healthcare and free university education in exchange</li>
+            <li>Parental leave: up to 480 days per child</li>
+          </ul>
+        </div>
+        <div class="slide-visual">
+          <div class="chart-label"><span class="tag soc">Social Democracy</span>: Sweden Key Data</div>
+          <table class="econ-table">
+            <tr><th>Indicator</th><th>Value</th></tr>
+            <tr><td>Top income tax rate</td><td>~55%</td></tr>
+            <tr><td>Healthcare</td><td>Universal, public</td></tr>
+            <tr><td>University tuition</td><td>Free for citizens</td></tr>
+            <tr><td>Parental leave</td><td>480 days per child</td></tr>
+            <tr><td>GINI coefficient</td><td>~0.29 (low inequality)</td></tr>
+            <tr><td>GDP per capita</td><td>~$55,000 (2023)</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="slide" data-page="systems" data-idx="4">
+        <div class="slide-text">
+          <h3>Socialism: Strengths and Limitations</h3>
+          <p><strong style="color:#93C5FD">Theoretical strengths:</strong></p>
+          <ul>
+            <li>Reduced income inequality</li>
+            <li>Universal access to essential services such as healthcare and education</li>
+            <li>Stronger social safety nets reduce poverty</li>
+            <li>Democratic participation in economic decisions</li>
+          </ul>
+          <p style="margin-top:0.5rem"><strong style="color:#FCA5A5">Theoretical limitations:</strong></p>
+          <ul>
+            <li>Higher tax burdens can reduce work incentives and capital investment</li>
+            <li>Larger government bureaucracies may reduce efficiency</li>
+            <li>May limit economic dynamism and entrepreneurship</li>
+            <li>Fiscal sustainability depends on continued economic growth</li>
+          </ul>
+        </div>
+        <div class="slide-visual">
+          <div class="chart-label">GINI Index Comparison (0 = perfect equality, World Bank)</div>
+          <div class="bar-row"><div class="bar-label">Denmark</div><div class="bar-track"><div class="bar-fill" style="width:29%"></div></div></div>
+          <div class="bar-row"><div class="bar-label">Sweden</div><div class="bar-track"><div class="bar-fill" style="width:31%"></div></div></div>
+          <div class="bar-row"><div class="bar-label">Germany</div><div class="bar-track"><div class="bar-fill" style="width:35%"></div></div></div>
+          <div class="bar-row"><div class="bar-label">United States</div><div class="bar-track"><div class="bar-fill" style="width:49%"></div></div></div>
+          <p class="note">Lower score = more equal income distribution.</p>
+        </div>
+      </div>
+
+      <div class="slide" data-page="systems" data-idx="5">
+        <div class="slide-text">
+          <h3>Communism: Maoist China (1949 to 1976)</h3>
+          <p>Communism, as stated by Karl Marx and Friedrich Engels, is a system in which all property and means of production are collectively owned. In practice, communist states have been characterized by single-party rule, state ownership of all major industries, and central economic planning.</p>
+          <p>The People's Republic of China under Mao Zedong represents the most known example. The state nationalized all private enterprise, collectivized agriculture, and implemented centrally planned production targets.</p>
+          <ul>
+            <li>The Great Leap Forward (1958 to 1962) was Mao's program to rapidly industrialize China through collectivized agriculture and steel production</li>
+            <li>It resulted in one of the deadliest famines in human history</li>
+            <li>Scholarly estimates range from 15 to 55 million deaths, caused primarily by policy failures and resource misallocation under central planning</li>
+          </ul>
+        </div>
+        <div class="slide-visual">
+          <div class="chart-label"><span class="tag com">Communist China</span>: Economic Structure</div>
+          <table class="econ-table">
+            <tr><th>Feature</th><th>Maoist Policy</th></tr>
+            <tr><td>Property ownership</td><td>State/collective only</td></tr>
+            <tr><td>Agriculture</td><td>Collectivized (communes)</td></tr>
+            <tr><td>Industry</td><td>State-owned, centrally planned</td></tr>
+            <tr><td>Price system</td><td>State-set, not market-driven</td></tr>
+            <tr><td>Private enterprise</td><td>Prohibited / eliminated</td></tr>
+            <tr><td>Foreign trade</td><td>Strictly controlled</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="slide" data-page="systems" data-idx="6">
+        <div class="slide-text">
+          <h3>Communism: Strengths and Limitations</h3>
+          <p><strong style="color:#93C5FD">Theoretical strengths:</strong></p>
+          <ul>
+            <li>Eliminates class-based exploitation</li>
+            <li>Directs resources toward collective needs rather than individual profit</li>
+            <li>Theoretically ends unemployment</li>
+            <li>Reduces income inequality to near zero</li>
+          </ul>
+          <p style="margin-top:0.5rem"><strong style="color:#FCA5A5">Historical limitations:</strong></p>
+          <ul>
+            <li>Central planning consistently struggled to allocate resources without price signals</li>
+            <li>Lack of incentives reduced productivity and innovation</li>
+            <li>Political concentration of economic power enabled authoritarian control</li>
+            <li>After Mao's death, China introduced market reforms in 1978 and lifted approximately 800 million people out of poverty by 2015, the largest poverty reduction in human history</li>
+          </ul>
+        </div>
+        <div class="slide-visual">
+          <div class="chart-label">China Extreme Poverty Rate (%)</div>
+          <div class="bar-row"><div class="bar-label">1981</div><div class="bar-track"><div class="bar-fill" style="width:88%"></div></div></div>
+          <div class="bar-row"><div class="bar-label">1990</div><div class="bar-track"><div class="bar-fill" style="width:66%"></div></div></div>
+          <div class="bar-row"><div class="bar-label">2000</div><div class="bar-track"><div class="bar-fill" style="width:40%"></div></div></div>
+          <div class="bar-row"><div class="bar-label">2010</div><div class="bar-track"><div class="bar-fill" style="width:18%"></div></div></div>
+          <div class="bar-row"><div class="bar-label">2019</div><div class="bar-track"><div class="bar-fill" style="width:3%"></div></div></div>
+          <p class="note">Decline correlates with market reforms introduced post-1978.</p>
+        </div>
+      </div>
+
+    </div>
+    <div class="slide-controls">
+      <div class="slide-counter" id="systems-counter">Slide 1 of 7</div>
+      <div class="slide-dots" id="systems-dots"></div>
+      <div class="ctrl-btns">
+        <button class="ctrl-btn" onclick="prevSlide('systems')" id="systems-prev" disabled>Prev</button>
+        <button class="ctrl-btn" onclick="nextSlide('systems')" id="systems-next">Next</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const state = {};
+
+  function initPage(id) {
+    const slides = document.querySelectorAll(`[data-page="${id}"]`);
+    const total = slides.length;
+    state[id] = { current: 0, total };
+    const dotsEl = document.getElementById(`${id}-dots`);
+    dotsEl.innerHTML = '';
+    for (let i = 0; i < total; i++) {
+      const d = document.createElement('div');
+      d.className = 'dot' + (i === 0 ? ' active' : '');
+      d.onclick = () => goToSlide(id, i);
+      dotsEl.appendChild(d);
+    }
+    updateControls(id);
+  }
+
+  function updateControls(id) {
+    const { current, total } = state[id];
+    document.getElementById(`${id}-counter`).textContent = `Slide ${current + 1} of ${total}`;
+    document.getElementById(`${id}-prev`).disabled = current === 0;
+    document.getElementById(`${id}-next`).disabled = current === total - 1;
+    document.querySelectorAll(`#${id}-dots .dot`).forEach((d, i) => {
+      d.className = 'dot' + (i === current ? ' active' : '');
+    });
+  }
+
+  function goToSlide(id, idx) {
+    const slides = document.querySelectorAll(`[data-page="${id}"]`);
+    slides[state[id].current].classList.remove('active');
+    state[id].current = idx;
+    slides[idx].classList.add('active');
+    updateControls(id);
+  }
+
+  function nextSlide(id) {
+    if (state[id].current < state[id].total - 1) goToSlide(id, state[id].current + 1);
+  }
+
+  function prevSlide(id) {
+    if (state[id].current > 0) goToSlide(id, state[id].current - 1);
+  }
+
+  function showPage(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+    if (!state[id]) initPage(id);
+  }
+
+  function goHome() {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('home').classList.add('active');
+    window.scrollTo(0, 0);
+  }
+</script>
+</body>
+</html>
